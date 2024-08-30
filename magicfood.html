@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>심리 테스트</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f8ff;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        #test-select {
+            display: block;
+        }
+        #test-select button {
+            margin: 10px;
+            padding: 15px 30px;
+            font-size: 1em;
+            background-color: #494bc4;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #test-select button:hover {
+            background-color: #494bc4;
+        }
+        #question-container {
+            margin: 20px 0;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0;
+            list-style: none;
+        }
+        .options button {
+            margin: 10px 0;
+            padding: 15px 30px;
+            font-size: 1em;
+            background-color: #494bc4;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 80%;
+            max-width: 400px;
+        }
+        .options button:hover {
+            background-color: #494bc4;
+        }
+        #result {
+            display: none;
+            margin-top: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+        #back-to-main {
+            display: none;
+            font-size: 2em;
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: #333;
+            margin-top: 20px;
+            margin-left: 50%;
+        }
+        #back-to-main:hover {
+            color: #494bc4;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>심리 테스트</h1>
+        <div id="test-select">
+            <button onclick="startWizardTest()">마법사 성격 테스트</button>
+            <button onclick="startFoodTest()">자기 관리 스타일 테스트</button>
+        </div>
+        <div id="test-screen" style="display:none;">
+            <div id="question-container"></div>
+            <div id="options-container" class="options"></div>
+        </div>
+        <div id="result">
+            <div id="result-content"></div>
+            <button id="back-to-main" onclick="backToMain()">⌂</button>
+        </div>
+    </div>
+
+    <script>
+        const wizardQuestions = [
+            {
+                text: "당신이 마법의 힘을 처음 발견했을 때, 어떤 반응을 보일까요?",
+                options: [
+                    "마법을 활용해 세상의 문제를 해결하려 한다.",
+                    "마법을 사용해 새로운 재미있는 장난을 치고 싶다.",
+                    "마법의 힘을 연구하고 더 많은 것을 배우고 싶다.",
+                    "마법을 숨기고 다른 사람들이 알지 못하게 조심스럽게 사용한다."
+                ]
+            },
+            {
+                text: "당신의 마법 사전에서 가장 중요한 주문은 무엇일까요?",
+                options: [
+                    "치유의 주문 - 사람들을 도와주는 마법.",
+                    "변신의 주문 - 새로운 모습으로 변신하거나 사람들을 놀래키는 마법.",
+                    "시간 여행의 주문 - 과거와 미래를 탐험하는 마법.",
+                    "invisibility 주문 - 보이지 않게 되는 마법, 조용히 지내고 싶다."
+                ]
+            },
+            {
+                text: "마법사로서 가장 좋아하는 장소는 어디일까요?",
+                options: [
+                    "숲 속의 마법의 연못 - 자연과 평화로운 분위기.",
+                    "신비로운 성 - 다양한 마법이 숨겨진 장소.",
+                    "시간의 도서관 - 오래된 지식과 마법의 서적이 가득한 곳.",
+                    "하늘의 성채 - 높은 곳에서 세상을 내려다보는 장소."
+                ]
+            },
+            {
+                text: "당신의 마법사 친구가 어려운 상황에 처했을 때, 당신은 어떻게 도와줄까요?",
+                options: [
+                    "직접 나서서 문제를 해결해준다.",
+                    "창의적인 아이디어나 재미있는 해결책을 제안한다.",
+                    "상황을 분석하고 연구하여 가장 좋은 방법을 찾는다.",
+                    "조용히 지켜보며 필요한 경우에만 도움을 준다."
+                ]
+            },
+            {
+                text: "마법사의 축제에서 당신의 역할은 무엇일까요?",
+                options: [
+                    "대회에서 승리하거나 주목받는 퍼포먼스를 한다.",
+                    "재미있고 유쾌한 마법의 쇼를 선보인다.",
+                    "지식을 나누거나 강연을 통해 사람들을 가르친다.",
+                    "뒤에서 조용히 지원하고, 다른 사람들을 돕는다."
+                ]
+            }
+        ];
+
+        const wizardResults = {
+            "세상의 수호자 마법사": ["마법을 활용해 세상의 문제를 해결하려 한다.", "치유의 주문 - 사람들을 도와주는 마법.", "숲 속의 마법의 연못 - 자연과 평화로운 분위기.", "직접 나서서 문제를 해결해준다.", "대회에서 승리하거나 주목받는 퍼포먼스를 한다."],
+            "장난꾸러기 마법사": ["마법을 사용해 새로운 재미있는 장난을 치고 싶다.", "변신의 주문 - 새로운 모습으로 변신하거나 사람들을 놀래키는 마법.", "신비로운 성 - 다양한 마법이 숨겨진 장소.", "창의적인 아이디어나 재미있는 해결책을 제안한다.", "재미있고 유쾌한 마법의 쇼를 선보인다."],
+            "지혜의 마법사": ["마법의 힘을 연구하고 더 많은 것을 배우고 싶다.", "시간 여행의 주문 - 과거와 미래를 탐험하는 마법.", "시간의 도서관 - 오래된 지식과 마법의 서적이 가득한 곳.", "상황을 분석하고 연구하여 가장 좋은 방법을 찾는다.", "지식을 나누거나 강연을 통해 사람들을 가르친다."],
+            "신비로운 은둔자 마법사": ["마법을 숨기고 다른 사람들이 알지 못하게 조심스럽게 사용한다.", "invisibility 주문 - 보이지 않게 되는 마법, 조용히 지내고 싶다.", "하늘의 성채 - 높은 곳에서 세상을 내려다보는 장소.", "조용히 지켜보며 필요한 경우에만 도움을 준다.", "뒤에서 조용히 지원하고, 다른 사람들을 돕는다."]
+        };
+
+        const foodQuestions = [
+            {
+                text: "일정을 관리할 때 가장 선호하는 방법은 무엇인가요?",
+                options: [
+                    "종이 다이어리나 플래너를 사용한다.",
+                    "스마트폰 앱을 사용해 알림을 설정한다.",
+                    "일정 관리에는 크게 신경 쓰지 않는다.",
+                    "매일 아침에 머릿속으로 일정을 계획한다."
+                ]
+            },
+            {
+                text: "스트레스를 받을 때 주로 어떻게 대처하나요?",
+                options: [
+                    "운동이나 외출로 스트레스를 풀려고 한다.",
+                    "친구나 가족과 대화하며 스트레스를 나눈다.",
+                    "혼자서 조용히 시간을 보내며 마음을 가다듬는다.",
+                    "일을 더 많이 해서 스트레스를 잊으려 한다."
+                ]
+            },
+            {
+                text: "목표를 설정할 때 가장 중요한 것은 무엇이라고 생각하나요?",
+                options: [
+                    "목표를 달성할 수 있는 구체적인 계획을 세운다.",
+                    "목표를 달성할 때까지 지속적으로 동기를 부여한다.",
+                    "목표를 세우기보다는 자연스럽게 흘러가는 대로 따른다.",
+                    "목표를 달성하기 위한 즉각적인 결과를 중시한다."
+                ]
+            },
+            {
+                text: "시간 관리를 할 때 가장 중요하게 생각하는 것은 무엇인가요?",
+                options: [
+                    "우선순위를 정해 중요한 일을 먼저 처리한다.",
+                    "시간을 엄격하게 지켜서 계획대로 일을 진행한다.",
+                    "상황에 따라 유연하게 대응한다.",
+                    "긴급한 일이 발생하면 일정을 조정한다."
+                ]
+            },
+            {
+                text: "자기 계발에 대해 어떤 태도를 가지고 있나요?",
+                options: [
+                    "정기적으로 책을 읽거나 새로운 기술을 배우려고 한다.",
+                    "전문가에게 조언을 구하고 관련 워크숍에 참석한다.",
+                    "자기 계발에 대해 별로 관심이 없다.",
+                    "스스로 경험을 통해 배워가려 한다."
+                ]
+            }
+        ];
+
+        const foodResults = {
+            "부대찌개": ["종이 다이어리나 플래너를 사용한다.", "목표를 달성할 수 있는 구체적인 계획을 세운다.", "우선순위를 정해 중요한 일을 먼저 처리한다.", "정기적으로 책을 읽거나 새로운 기술을 배우려고 한다."],
+            "불고기": ["스마트폰 앱을 사용해 알림을 설정한다.", "목표를 달성할 때까지 지속적으로 동기를 부여한다.", "시간을 엄격하게 지켜서 계획대로 일을 진행한다.", "전문가에게 조언을 구하고 관련 워크숍에 참석한다."],
+            "샐러드": ["일정 관리에는 크게 신경 쓰지 않는다.", "목표를 세우기보다는 자연스럽게 흘러가는 대로 따른다.", "상황에 따라 유연하게 대응한다.", "자기 계발에 대해 별로 관심이 없다."],
+            "라면": ["매일 아침에 머릿속으로 일정을 계획한다.", "목표를 달성하기 위한 즉각적인 결과를 중시한다.", "긴급한 일이 발생하면 일정을 조정한다.", "스스로 경험을 통해 배워가려 한다."]
+        };
+
+        let currentTest = null;
+        let currentQuestionIndex = 0;
+        let answers = [];
+
+        function startWizardTest() {
+            currentTest = 'wizard';
+            currentQuestionIndex = 0;
+            answers = [];
+            document.getElementById('test-select').style.display = 'none';
+            document.getElementById('test-screen').style.display = 'block';
+            showQuestion();
+        }
+
+        function startFoodTest() {
+            currentTest = 'food';
+            currentQuestionIndex = 0;
+            answers = [];
+            document.getElementById('test-select').style.display = 'none';
+            document.getElementById('test-screen').style.display = 'block';
+            showQuestion();
+        }
+
+        function showQuestion() {
+            if (currentQuestionIndex >= (currentTest === 'wizard' ? wizardQuestions : foodQuestions).length) {
+                showResult();
+                return;
+            }
+
+            const questions = currentTest === 'wizard' ? wizardQuestions : foodQuestions;
+            const question = questions[currentQuestionIndex];
+            const questionContainer = document.getElementById('question-container');
+            const optionsContainer = document.getElementById('options-container');
+            questionContainer.innerHTML = question.text;
+            optionsContainer.innerHTML = '';
+
+            question.options.forEach((option) => {
+                optionsContainer.innerHTML += `
+                    <button onclick="selectOption('${option}')">${option}</button>
+                `;
+            });
+        }
+
+        function selectOption(option) {
+            answers.push(option);
+            currentQuestionIndex++;
+            if (currentQuestionIndex < (currentTest === 'wizard' ? wizardQuestions : foodQuestions).length) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            let scores = {};
+            const results = currentTest === 'wizard' ? wizardResults : foodResults;
+
+            Object.keys(results).forEach(key => {
+                scores[key] = 0;
+            });
+
+            answers.forEach(answer => {
+                for (const [type, options] of Object.entries(results)) {
+                    if (options.includes(answer)) {
+                        scores[type]++;
+                    }
+                }
+            });
+
+            const maxScore = Math.max(...Object.values(scores));
+            const resultType = Object.keys(scores).find(type => scores[type] === maxScore);
+
+            document.getElementById('result-content').innerHTML = `
+                <h2>${resultType}</h2>
+                <p>${resultType}에 대한 설명을 여기에 입력하세요.</p>
+            `;
+            document.getElementById('test-screen').style.display = 'none';
+            document.getElementById('result').style.display = 'block';
+            document.getElementById('back-to-main').style.display = 'block';
+        }
+
+        function backToMain() {
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('test-select').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
